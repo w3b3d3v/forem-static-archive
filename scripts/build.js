@@ -91,18 +91,30 @@ function convertLiquidTags(html) {
   let converted = html;
 
   // Convert YouTube embeds: {% youtube URL %}
-  converted = converted.replace(/\{%\s*youtube\s+([^\s%]+)\s*%\}/gi, (match, url) => {
+  // Note: URL might be wrapped in <a> tags from CSV parsing
+  converted = converted.replace(/\{%\s*youtube\s+(.+?)\s*%\}/gi, (match, content) => {
+    // Extract URL from content (might be plain URL or wrapped in <a> tag)
+    let url = content.trim();
+
+    // If content contains an <a> tag, extract the href
+    const hrefMatch = url.match(/href=["']([^"']+)["']/);
+    if (hrefMatch) {
+      url = hrefMatch[1];
+    }
+
     // Extract video ID from various YouTube URL formats
     let videoId = null;
 
     // Format: https://youtube.com/watch?v=VIDEO_ID
     // Format: https://www.youtube.com/watch?v=VIDEO_ID
     // Format: https://youtu.be/VIDEO_ID
-    // Format: https://www.youtu.be/watch?v=VIDEO_ID
+    // Format: https://youtube.com/VIDEO_ID (direct ID after domain)
+    // Format: https://www.youtube.com/embed/VIDEO_ID
 
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
-      /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
+      /(?:youtube\.com|www\.youtube\.com)\/([a-zA-Z0-9_-]{11})$/,  // Direct ID after domain
+      /^([a-zA-Z0-9_-]{11})$/ // Just the video ID
     ];
 
     for (const pattern of patterns) {
@@ -242,11 +254,12 @@ async function build() {
         allowedAttributes: {
           ...sanitizeHtml.defaults.allowedAttributes,
           img: ['src', 'alt', 'title', 'width', 'height'],
-          iframe: ['src', 'frameborder', 'allow', 'allowfullscreen', 'loading', 'style'],
+          iframe: ['src', 'frameborder', 'allow', 'allowfullscreen', 'loading', 'style', 'width', 'height'],
           div: ['class', 'style']
         },
         allowedSchemes: ['http', 'https', 'data'],
-        allowedIframeHostnames: ['www.youtube.com', 'youtube.com']
+        allowedIframeHostnames: ['www.youtube.com', 'youtube.com'],
+        allowIframeRelativeUrls: false
       });
 
       const description = article.description || generateDescription(contentHtml);
