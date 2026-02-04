@@ -211,8 +211,10 @@ async function build() {
   // Load partials
   const headerPartial = fs.readFileSync(path.join(TEMPLATES_DIR, 'partials/header.html'), 'utf-8');
   const footerPartial = fs.readFileSync(path.join(TEMPLATES_DIR, 'partials/footer.html'), 'utf-8');
+  const analyticsPartial = fs.readFileSync(path.join(TEMPLATES_DIR, 'partials/analytics.html'), 'utf-8');
   engine.loadPartial('header', headerPartial);
   engine.loadPartial('footer', footerPartial);
+  engine.loadPartial('analytics', analyticsPartial);
 
   // Load templates
   const articleTemplate = fs.readFileSync(path.join(TEMPLATES_DIR, 'article.html'), 'utf-8');
