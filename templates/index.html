@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary Meta Tags -->
+  <title>Article Archive · Preserved Content</title>
+  <meta name="title" content="Article Archive">
+  <meta name="description" content="Archive of {{articleCount}} articles from {{userCount}} authors">
+  <link rel="canonical" href="{{canonicalUrl}}">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{canonicalUrl}}">
+  <meta property="og:title" content="Article Archive">
+  <meta property="og:description" content="Archive of {{articleCount}} articles from {{userCount}} authors">
+  <meta property="og:site_name" content="Article Archive">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="{{canonicalUrl}}">
+  <meta name="twitter:title" content="Article Archive">
+  <meta name="twitter:description" content="Archive of {{articleCount}} articles from {{userCount}} authors">
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Article Archive",
+    "description": "Archive of {{articleCount}} articles from {{userCount}} authors",
+    "url": "{{canonicalUrl}}"
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+
+  {{> header}}
+
+  <main id="main-content" class="index-page">
+    <div class="container">
+      <header class="page-header">
+        <h1>Article Archive</h1>
+        <p class="subtitle">{{articleCount}} articles by {{userCount}} authors</p>
+      </header>
+
+      <div class="article-list">
+        {{#each articles}}
+        <article class="article-card">
+          <h2>
+            <a href="/{{username}}/{{slug}}">{{title}}</a>
+          </h2>
+          <div class="article-card-meta">
+            <a href="/{{username}}">{{author}}</a>
+            <span class="article-meta-separator">·</span>
+            <time datetime="{{publishedAt}}">{{publishedDate}}</time>
+            {{#if readingTime}}
+            <span class="article-meta-separator">·</span>
+            <span>{{readingTime}} min read</span>
+            {{/if}}
+          </div>
+          {{#if description}}
+          <p class="article-card-excerpt">{{description}}</p>
+          {{/if}}
+        </article>
+        {{/each}}
+      </div>
+    </div>
+  </main>
+
+  {{> footer}}
+</body>
+</html>
