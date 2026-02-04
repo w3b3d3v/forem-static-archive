@@ -5,7 +5,7 @@ const { marked } = require('marked');
 const sanitizeHtml = require('sanitize-html');
 
 // Configuration
-const SITE_URL = 'https://yourdomain.com'; // Update when deploying
+const SITE_URL = 'https://pt.w3d.community';
 const DATA_DIR = path.join(__dirname, '../data');
 const TEMPLATES_DIR = path.join(__dirname, '../templates');
 const PUBLIC_DIR = path.join(__dirname, '../public');
