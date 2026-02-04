@@ -86,6 +86,62 @@ function calculateReadingTime(html) {
   return Math.ceil(words / 200); // Average reading speed: 200 words/min
 }
 
+// Utility: Convert Liquid tags to HTML
+function convertLiquidTags(html) {
+  let converted = html;
+
+  // Convert YouTube embeds: {% youtube URL %}
+  converted = converted.replace(/\{%\s*youtube\s+([^\s%]+)\s*%\}/gi, (match, url) => {
+    // Extract video ID from various YouTube URL formats
+    let videoId = null;
+
+    // Format: https://youtube.com/watch?v=VIDEO_ID
+    // Format: https://www.youtube.com/watch?v=VIDEO_ID
+    // Format: https://youtu.be/VIDEO_ID
+    // Format: https://www.youtu.be/watch?v=VIDEO_ID
+
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
+      /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        videoId = match[1];
+        break;
+      }
+    }
+
+    if (videoId) {
+      return `<div class="video-embed" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 2rem 0;">
+  <iframe
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+    src="https://www.youtube.com/embed/${videoId}"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+    loading="lazy"
+  ></iframe>
+</div>`;
+    }
+
+    // If we can't parse the video ID, return a link
+    return `<p><a href="${url}" target="_blank" rel="noopener">Watch on YouTube</a></p>`;
+  });
+
+  // Convert other common Liquid tags to simple text or links
+  // {% link URL %} or {% embed URL %}
+  converted = converted.replace(/\{%\s*(link|embed)\s+([^\s%]+)\s*%\}/gi, (match, tag, url) => {
+    return `<p><a href="${url}" target="_blank" rel="noopener">${url}</a></p>`;
+  });
+
+  // Remove any remaining Liquid tags
+  converted = converted.replace(/\{%[^%]*%\}/g, '');
+
+  return converted;
+}
+
 // Load CSV as promise
 function loadCSV(filePath) {
   return new Promise((resolve, reject) => {
@@ -177,14 +233,20 @@ async function build() {
         contentHtml = marked.parse(article.body_markdown);
       }
 
-      // Sanitize HTML (keep images with S3 URLs)
+      // Convert Liquid tags (YouTube embeds, etc.)
+      contentHtml = convertLiquidTags(contentHtml);
+
+      // Sanitize HTML (keep images with S3 URLs and iframes for YouTube)
       contentHtml = sanitizeHtml(contentHtml, {
-        allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2']),
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'iframe', 'div']),
         allowedAttributes: {
           ...sanitizeHtml.defaults.allowedAttributes,
-          img: ['src', 'alt', 'title', 'width', 'height']
+          img: ['src', 'alt', 'title', 'width', 'height'],
+          iframe: ['src', 'frameborder', 'allow', 'allowfullscreen', 'loading', 'style'],
+          div: ['class', 'style']
         },
-        allowedSchemes: ['http', 'https', 'data']
+        allowedSchemes: ['http', 'https', 'data'],
+        allowedIframeHostnames: ['www.youtube.com', 'youtube.com']
       });
 
       const description = article.description || generateDescription(contentHtml);
