@@ -364,43 +364,66 @@ async function build() {
 
   console.log('   ✅ Generated homepage\n');
 
-  // Step 8: Generate sitemap.xml
-  console.log('🗺️  Generating sitemap...');
+  // Step 8: Generate sitemaps
+  console.log('🗺️  Generating sitemaps...');
 
+  // sitemap-posts.xml (articles)
+  let sitemapPosts = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  sitemapPosts += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+  for (const username of usernames) {
+    for (const article of articlesByUser[username]) {
+      sitemapPosts += '  <url>\n';
+      sitemapPosts += `    <loc>${SITE_URL}/${username}/${article.slug}</loc>\n`;
+      sitemapPosts += `    <lastmod>${article.updated_at || article.published_at}</lastmod>\n`;
+      sitemapPosts += '    <changefreq>never</changefreq>\n';
+      sitemapPosts += '    <priority>0.6</priority>\n';
+      sitemapPosts += '  </url>\n';
+    }
+  }
+  sitemapPosts += '</urlset>';
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap-posts.xml'), sitemapPosts);
+
+  // sitemap-users.xml (profile pages)
+  let sitemapUsers = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  sitemapUsers += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+  for (const username of usernames) {
+    sitemapUsers += '  <url>\n';
+    sitemapUsers += `    <loc>${SITE_URL}/${username}/</loc>\n`;
+    sitemapUsers += '    <changefreq>weekly</changefreq>\n';
+    sitemapUsers += '    <priority>0.8</priority>\n';
+    sitemapUsers += '  </url>\n';
+  }
+  sitemapUsers += '</urlset>';
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap-users.xml'), sitemapUsers);
+
+  // sitemap-index.xml (main sitemap index)
+  let sitemapIndex = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  sitemapIndex += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+  sitemapIndex += '  <sitemap>\n';
+  sitemapIndex += `    <loc>${SITE_URL}/sitemap-posts.xml</loc>\n`;
+  sitemapIndex += '  </sitemap>\n';
+  sitemapIndex += '  <sitemap>\n';
+  sitemapIndex += `    <loc>${SITE_URL}/sitemap-users.xml</loc>\n`;
+  sitemapIndex += '  </sitemap>\n';
+  sitemapIndex += '</sitemapindex>';
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap-index.xml'), sitemapIndex);
+
+  // Keep the original sitemap.xml for homepage
   let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
   sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-
-  // Homepage
   sitemap += '  <url>\n';
   sitemap += `    <loc>${SITE_URL}/</loc>\n`;
   sitemap += '    <changefreq>daily</changefreq>\n';
   sitemap += '    <priority>1.0</priority>\n';
   sitemap += '  </url>\n';
-
-  // Profile pages
-  for (const username of usernames) {
-    sitemap += '  <url>\n';
-    sitemap += `    <loc>${SITE_URL}/${username}/</loc>\n`;
-    sitemap += '    <changefreq>weekly</changefreq>\n';
-    sitemap += '    <priority>0.8</priority>\n';
-    sitemap += '  </url>\n';
-  }
-
-  // Article pages
-  for (const username of usernames) {
-    for (const article of articlesByUser[username]) {
-      sitemap += '  <url>\n';
-      sitemap += `    <loc>${SITE_URL}/${username}/${article.slug}</loc>\n`;
-      sitemap += `    <lastmod>${article.updated_at || article.published_at}</lastmod>\n`;
-      sitemap += '    <changefreq>never</changefreq>\n';
-      sitemap += '    <priority>0.6</priority>\n';
-      sitemap += '  </url>\n';
-    }
-  }
-
   sitemap += '</urlset>';
   fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemap);
 
+  console.log('   ✅ Generated sitemap-posts.xml');
+  console.log('   ✅ Generated sitemap-users.xml');
+  console.log('   ✅ Generated sitemap-index.xml');
   console.log('   ✅ Generated sitemap.xml\n');
 
   // Step 9: Generate robots.txt
@@ -429,8 +452,10 @@ Allow: /
 User-agent: ChatGPT-User
 Allow: /
 
-# Sitemap
-Sitemap: ${SITE_URL}/sitemap.xml
+# Sitemaps
+Sitemap: ${SITE_URL}/sitemap-index.xml
+Sitemap: ${SITE_URL}/sitemap-posts.xml
+Sitemap: ${SITE_URL}/sitemap-users.xml
 `;
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'robots.txt'), robotsTxt);
