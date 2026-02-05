@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Primary Meta Tags -->
-  <title>{{title}} · {{author}}</title>
+  <title>{{title}} | {{author}} - WEB3DEV</title>
   <meta name="title" content="{{title}}">
   <meta name="description" content="{{description}}">
   <link rel="canonical" href="{{canonicalUrl}}">
@@ -15,15 +15,25 @@
   <meta property="og:url" content="{{canonicalUrl}}">
   <meta property="og:title" content="{{title}}">
   <meta property="og:description" content="{{description}}">
-  {{#if featuredImage}}<meta property="og:image" content="{{featuredImage}}">{{/if}}
-  <meta property="og:site_name" content="Article Archive">
+  <meta property="og:site_name" content="WEB3DEV">
+  {{#if featuredImage}}
+  <meta property="og:image" content="{{featuredImage}}">
+  {{else}}
+  <meta property="og:image" content="https://pt.w3d.community/assets/img/og-default.png">
+  {{/if}}
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="{{canonicalUrl}}">
   <meta name="twitter:title" content="{{title}}">
   <meta name="twitter:description" content="{{description}}">
-  {{#if featuredImage}}<meta name="twitter:image" content="{{featuredImage}}">{{/if}}
+  {{#if featuredImage}}
+  <meta name="twitter:image" content="{{featuredImage}}">
+  {{else}}
+  <meta name="twitter:image" content="https://pt.w3d.community/assets/img/og-default.png">
+  {{/if}}
 
   <!-- Article Metadata -->
   <meta property="article:published_time" content="{{publishedAt}}">
