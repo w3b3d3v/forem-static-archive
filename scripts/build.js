@@ -426,7 +426,87 @@ async function build() {
   console.log('   ✅ Generated sitemap-index.xml');
   console.log('   ✅ Generated sitemap.xml\n');
 
-  // Step 9: Generate robots.txt
+  // Step 9: Generate llms.txt
+  async function generateLlmsTxt(articles, users) {
+    // Count tags
+    const tagCounts = {};
+    articles.forEach(article => {
+      if (article.cached_tag_list) {
+        const tags = article.cached_tag_list.split(',').map(t => t.trim());
+        tags.forEach(tag => {
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        });
+      }
+    });
+
+    // Get top 15 topics
+    const topTopics = Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15);
+
+    // Count articles by author
+    const authorCounts = {};
+    articles.forEach(article => {
+      const username = article.cached_user_username;
+      if (username) {
+        authorCounts[username] = (authorCounts[username] || 0) + 1;
+      }
+    });
+
+    // Get top 10 authors
+    const topAuthors = Object.entries(authorCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    // Get latest 20 articles
+    const latestArticles = articles
+      .sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
+      .slice(0, 20);
+
+    // Build llms.txt
+    let llmsTxt = `# WEB3DEV Portuguese Archive\n\n`;
+    llmsTxt += `> A comprehensive archive of ${articles.length} Web3 and blockchain articles in Portuguese, covering topics from smart contract development to decentralized finance.\n\n`;
+    llmsTxt += `This archive preserves high-quality educational content from the WEB3DEV community, featuring tutorials, guides, and technical articles about blockchain technology, Ethereum, Solana, and Web3 development.\n\n`;
+
+    llmsTxt += `## Popular Topics\n\n`;
+    topTopics.forEach(([tag, count]) => {
+      const descriptions = {
+        'Blockchain': 'blockchain fundamentals, architecture, and applications',
+        'Solidity': 'smart contract programming and development',
+        'Ethereum': 'the Ethereum ecosystem and EVM',
+        'Web3': 'Web3 technologies and decentralized applications',
+        'NFT': 'non-fungible tokens and digital collectibles',
+        'Web3Dev': 'the Web3Dev community',
+        'DeFi': 'decentralized finance protocols and concepts',
+        'Solana': 'Solana development and ecosystem',
+        'Rust': 'Rust programming for blockchain',
+        'DApp': 'decentralized application development',
+        'DAO': 'decentralized autonomous organizations',
+        'Smart Contract': 'smart contract development and security',
+        'NEAR': 'NEAR Protocol',
+        'Token': 'tokenomics and token standards',
+        'EVM': 'Ethereum Virtual Machine'
+      };
+      const desc = descriptions[tag] || tag.toLowerCase();
+      llmsTxt += `- [${tag}](${SITE_URL}): ${count} articles covering ${desc}\n`;
+    });
+
+    llmsTxt += `\n## Top Authors\n\n`;
+    topAuthors.forEach(([username, count]) => {
+      llmsTxt += `- [${username}](${SITE_URL}/${username}): ${count} articles\n`;
+    });
+
+    llmsTxt += `\n## Latest Articles\n\n`;
+    latestArticles.forEach(article => {
+      const url = `${SITE_URL}/${article.cached_user_username}/${article.slug}`;
+      const desc = article.description ? article.description.substring(0, 100) : article.title;
+      llmsTxt += `- [${article.title}](${url}): ${desc}\n`;
+    });
+
+    fs.writeFileSync(path.join(PUBLIC_DIR, 'llms.txt'), llmsTxt);
+  }
+
+  // Step 10: Generate robots.txt
   console.log('🤖 Generating robots.txt...');
 
   const robotsTxt = `# Allow all crawlers
@@ -462,6 +542,11 @@ Sitemap: ${SITE_URL}/sitemap-users.xml
 
   console.log('   ✅ Generated robots.txt\n');
 
+  // Generate llms.txt
+  console.log('🤖 Generating llms.txt...');
+  await generateLlmsTxt(articles, users);
+  console.log('   ✅ Generated llms.txt\n');
+
   // Summary
   console.log('✨ Build complete!\n');
   console.log('📊 Summary:');
@@ -469,7 +554,8 @@ Sitemap: ${SITE_URL}/sitemap-users.xml
   console.log(`   - ${profileCount} profile pages`);
   console.log(`   - 1 homepage`);
   console.log(`   - sitemap.xml with ${articleCount + profileCount + 1} URLs`);
-  console.log(`   - robots.txt\n`);
+  console.log(`   - robots.txt`);
+  console.log(`   - llms.txt\n`);
   console.log(`🌐 Run 'npm run serve' to test locally`);
 }
 
