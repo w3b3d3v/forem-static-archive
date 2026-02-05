@@ -21,5 +21,7 @@ Allow: /
 User-agent: ChatGPT-User
 Allow: /
 
-# Sitemap
-Sitemap: https://yourdomain.com/sitemap.xml
+# Sitemaps
+Sitemap: https://pt.w3d.community/sitemap-index.xml
+Sitemap: https://pt.w3d.community/sitemap-posts.xml
+Sitemap: https://pt.w3d.community/sitemap-users.xml
