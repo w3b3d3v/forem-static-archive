@@ -172,7 +172,18 @@ async function build() {
 
   // Step 1: Load data
   console.log('📊 Loading CSV data...');
-  const articles = await loadCSV(path.join(DATA_DIR, 'forem_articles_filtered_by_outdated.csv'));
+  // Use migrated CSV if it exists, otherwise fall back to original
+  const migratedCSV = path.join(DATA_DIR, 'forem_articles_with_local_images.csv');
+  const originalCSV = path.join(DATA_DIR, 'forem_articles_filtered_by_outdated.csv');
+  const csvPath = fs.existsSync(migratedCSV) ? migratedCSV : originalCSV;
+
+  if (csvPath === migratedCSV) {
+    console.log('   Using migrated CSV with local images');
+  } else {
+    console.log('   Using original CSV (run "npm run migrate-images" first to use local images)');
+  }
+
+  const articles = await loadCSV(csvPath);
   const users = await loadCSV(path.join(DATA_DIR, 'forem_users_with_published_articles.csv'));
 
   console.log(`   Loaded ${articles.length} articles`);
@@ -250,7 +261,7 @@ async function build() {
       // Convert Liquid tags (YouTube embeds, etc.)
       contentHtml = convertLiquidTags(contentHtml);
 
-      // Sanitize HTML (keep images with S3 URLs and iframes for YouTube)
+      // Sanitize HTML (keep images and iframes for YouTube)
       contentHtml = sanitizeHtml(contentHtml, {
         allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'iframe', 'div']),
         allowedAttributes: {

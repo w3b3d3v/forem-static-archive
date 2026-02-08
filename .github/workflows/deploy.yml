@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Download and migrate images
+        run: npm run migrate-images
+
       - name: Build site
         run: npm run build
 

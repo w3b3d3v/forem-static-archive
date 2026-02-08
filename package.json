@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Static archive of Forem articles with SEO optimization and mobile-responsive design",
   "scripts": {
+    "migrate-images": "node scripts/migrate-images.js",
     "build": "node scripts/build.js",
     "serve": "npx http-server public -p 8080 -o",
     "clean": "rm -rf public/*"
@@ -10,7 +11,8 @@
   "dependencies": {
     "csv-parser": "^3.0.0",
     "marked": "^11.0.0",
-    "sanitize-html": "^2.11.0"
+    "sanitize-html": "^2.11.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "http-server": "^14.1.1"
